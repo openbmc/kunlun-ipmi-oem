@@ -1,0 +1,657 @@
+From 560c064f98b45b8bc49979bf065da0ac9469c471 Mon Sep 17 00:00:00 2001
+From: Xiuzhi Cheng <xzcheng@zd-tech.com.cn>
+Date: Tue, 7 Jun 2022 09:48:01 +0800
+Subject: [PATCH]  Kunlun OEM commands,The first version add two commands:
+ 1,setCpuInfo:save cpu infomation from bios to file 2,getCpuInfo:load cpu
+ infomation from file
+
+---
+ LICENSE                       | 201 ++++++++++++++++++++++++++++++++++
+ MAINTAINERS                   |  45 ++++++++
+ OWNERS                        |  44 ++++++++
+ README.md                     |   3 +
+ meson.build                   |  29 +++++
+ meson_options.txt             |   3 +
+ src/.uuid                     |   1 +
+ src/kunlun_oem.cpp            |  89 +++++++++++++++
+ src/kunlun_oem.hpp            |  23 ++++
+ src/meson.build               |  19 ++++
+ test/.uuid                    |   1 +
+ test/meson.build              |  23 ++++
+ test/test_kunlun_ipmi_oem.cpp |  56 ++++++++++
+ 13 files changed, 537 insertions(+)
+ create mode 100644 LICENSE
+ create mode 100644 MAINTAINERS
+ create mode 100644 OWNERS
+ create mode 100644 README.md
+ create mode 100644 meson.build
+ create mode 100644 meson_options.txt
+ create mode 100644 src/.uuid
+ create mode 100644 src/kunlun_oem.cpp
+ create mode 100644 src/kunlun_oem.hpp
+ create mode 100644 src/meson.build
+ create mode 100644 test/.uuid
+ create mode 100644 test/meson.build
+ create mode 100644 test/test_kunlun_ipmi_oem.cpp
+
+diff --git a/LICENSE b/LICENSE
+new file mode 100644
+index 0000000..8dada3e
+--- /dev/null
++++ b/LICENSE
+@@ -0,0 +1,201 @@
++                                 Apache License
++                           Version 2.0, January 2004
++                        http://www.apache.org/licenses/
++
++   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
++
++   1. Definitions.
++
++      "License" shall mean the terms and conditions for use, reproduction,
++      and distribution as defined by Sections 1 through 9 of this document.
++
++      "Licensor" shall mean the copyright owner or entity authorized by
++      the copyright owner that is granting the License.
++
++      "Legal Entity" shall mean the union of the acting entity and all
++      other entities that control, are controlled by, or are under common
++      control with that entity. For the purposes of this definition,
++      "control" means (i) the power, direct or indirect, to cause the
++      direction or management of such entity, whether by contract or
++      otherwise, or (ii) ownership of fifty percent (50%) or more of the
++      outstanding shares, or (iii) beneficial ownership of such entity.
++
++      "You" (or "Your") shall mean an individual or Legal Entity
++      exercising permissions granted by this License.
++
++      "Source" form shall mean the preferred form for making modifications,
++      including but not limited to software source code, documentation
++      source, and configuration files.
++
++      "Object" form shall mean any form resulting from mechanical
++      transformation or translation of a Source form, including but
++      not limited to compiled object code, generated documentation,
++      and conversions to other media types.
++
++      "Work" shall mean the work of authorship, whether in Source or
++      Object form, made available under the License, as indicated by a
++      copyright notice that is included in or attached to the work
++      (an example is provided in the Appendix below).
++
++      "Derivative Works" shall mean any work, whether in Source or Object
++      form, that is based on (or derived from) the Work and for which the
++      editorial revisions, annotations, elaborations, or other modifications
++      represent, as a whole, an original work of authorship. For the purposes
++      of this License, Derivative Works shall not include works that remain
++      separable from, or merely link (or bind by name) to the interfaces of,
++      the Work and Derivative Works thereof.
++
++      "Contribution" shall mean any work of authorship, including
++      the original version of the Work and any modifications or additions
++      to that Work or Derivative Works thereof, that is intentionally
++      submitted to Licensor for inclusion in the Work by the copyright owner
++      or by an individual or Legal Entity authorized to submit on behalf of
++      the copyright owner. For the purposes of this definition, "submitted"
++      means any form of electronic, verbal, or written communication sent
++      to the Licensor or its representatives, including but not limited to
++      communication on electronic mailing lists, source code control systems,
++      and issue tracking systems that are managed by, or on behalf of, the
++      Licensor for the purpose of discussing and improving the Work, but
++      excluding communication that is conspicuously marked or otherwise
++      designated in writing by the copyright owner as "Not a Contribution."
++
++      "Contributor" shall mean Licensor and any individual or Legal Entity
++      on behalf of whom a Contribution has been received by Licensor and
++      subsequently incorporated within the Work.
++
++   2. Grant of Copyright License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      copyright license to reproduce, prepare Derivative Works of,
++      publicly display, publicly perform, sublicense, and distribute the
++      Work and such Derivative Works in Source or Object form.
++
++   3. Grant of Patent License. Subject to the terms and conditions of
++      this License, each Contributor hereby grants to You a perpetual,
++      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
++      (except as stated in this section) patent license to make, have made,
++      use, offer to sell, sell, import, and otherwise transfer the Work,
++      where such license applies only to those patent claims licensable
++      by such Contributor that are necessarily infringed by their
++      Contribution(s) alone or by combination of their Contribution(s)
++      with the Work to which such Contribution(s) was submitted. If You
++      institute patent litigation against any entity (including a
++      cross-claim or counterclaim in a lawsuit) alleging that the Work
++      or a Contribution incorporated within the Work constitutes direct
++      or contributory patent infringement, then any patent licenses
++      granted to You under this License for that Work shall terminate
++      as of the date such litigation is filed.
++
++   4. Redistribution. You may reproduce and distribute copies of the
++      Work or Derivative Works thereof in any medium, with or without
++      modifications, and in Source or Object form, provided that You
++      meet the following conditions:
++
++      (a) You must give any other recipients of the Work or
++          Derivative Works a copy of this License; and
++
++      (b) You must cause any modified files to carry prominent notices
++          stating that You changed the files; and
++
++      (c) You must retain, in the Source form of any Derivative Works
++          that You distribute, all copyright, patent, trademark, and
++          attribution notices from the Source form of the Work,
++          excluding those notices that do not pertain to any part of
++          the Derivative Works; and
++
++      (d) If the Work includes a "NOTICE" text file as part of its
++          distribution, then any Derivative Works that You distribute must
++          include a readable copy of the attribution notices contained
++          within such NOTICE file, excluding those notices that do not
++          pertain to any part of the Derivative Works, in at least one
++          of the following places: within a NOTICE text file distributed
++          as part of the Derivative Works; within the Source form or
++          documentation, if provided along with the Derivative Works; or,
++          within a display generated by the Derivative Works, if and
++          wherever such third-party notices normally appear. The contents
++          of the NOTICE file are for informational purposes only and
++          do not modify the License. You may add Your own attribution
++          notices within Derivative Works that You distribute, alongside
++          or as an addendum to the NOTICE text from the Work, provided
++          that such additional attribution notices cannot be construed
++          as modifying the License.
++
++      You may add Your own copyright statement to Your modifications and
++      may provide additional or different license terms and conditions
++      for use, reproduction, or distribution of Your modifications, or
++      for any such Derivative Works as a whole, provided Your use,
++      reproduction, and distribution of the Work otherwise complies with
++      the conditions stated in this License.
++
++   5. Submission of Contributions. Unless You explicitly state otherwise,
++      any Contribution intentionally submitted for inclusion in the Work
++      by You to the Licensor shall be under the terms and conditions of
++      this License, without any additional terms or conditions.
++      Notwithstanding the above, nothing herein shall supersede or modify
++      the terms of any separate license agreement you may have executed
++      with Licensor regarding such Contributions.
++
++   6. Trademarks. This License does not grant permission to use the trade
++      names, trademarks, service marks, or product names of the Licensor,
++      except as required for reasonable and customary use in describing the
++      origin of the Work and reproducing the content of the NOTICE file.
++
++   7. Disclaimer of Warranty. Unless required by applicable law or
++      agreed to in writing, Licensor provides the Work (and each
++      Contributor provides its Contributions) on an "AS IS" BASIS,
++      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
++      implied, including, without limitation, any warranties or conditions
++      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
++      PARTICULAR PURPOSE. You are solely responsible for determining the
++      appropriateness of using or redistributing the Work and assume any
++      risks associated with Your exercise of permissions under this License.
++
++   8. Limitation of Liability. In no event and under no legal theory,
++      whether in tort (including negligence), contract, or otherwise,
++      unless required by applicable law (such as deliberate and grossly
++      negligent acts) or agreed to in writing, shall any Contributor be
++      liable to You for damages, including any direct, indirect, special,
++      incidental, or consequential damages of any character arising as a
++      result of this License or out of the use or inability to use the
++      Work (including but not limited to damages for loss of goodwill,
++      work stoppage, computer failure or malfunction, or any and all
++      other commercial damages or losses), even if such Contributor
++      has been advised of the possibility of such damages.
++
++   9. Accepting Warranty or Additional Liability. While redistributing
++      the Work or Derivative Works thereof, You may choose to offer,
++      and charge a fee for, acceptance of support, warranty, indemnity,
++      or other liability obligations and/or rights consistent with this
++      License. However, in accepting such obligations, You may act only
++      on Your own behalf and on Your sole responsibility, not on behalf
++      of any other Contributor, and only if You agree to indemnify,
++      defend, and hold each Contributor harmless for any liability
++      incurred by, or claims asserted against, such Contributor by reason
++      of your accepting any such warranty or additional liability.
++
++   END OF TERMS AND CONDITIONS
++
++   APPENDIX: How to apply the Apache License to your work.
++
++      To apply the Apache License to your work, attach the following
++      boilerplate notice, with the fields enclosed by brackets "{}"
++      replaced with your own identifying information. (Don't include
++      the brackets!)  The text should be enclosed in the appropriate
++      comment syntax for the file format. We also recommend that a
++      file or class name and description of purpose be included on the
++      same "printed page" as the copyright notice for easier
++      identification within third-party archives.
++
++   Copyright {yyyy} {name of copyright owner}
++
++   Licensed under the Apache License, Version 2.0 (the "License");
++   you may not use this file except in compliance with the License.
++   You may obtain a copy of the License at
++
++       http://www.apache.org/licenses/LICENSE-2.0
++
++   Unless required by applicable law or agreed to in writing, software
++   distributed under the License is distributed on an "AS IS" BASIS,
++   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++   See the License for the specific language governing permissions and
++   limitations under the License.
+diff --git a/MAINTAINERS b/MAINTAINERS
+new file mode 100644
+index 0000000..a5dbdef
+--- /dev/null
++++ b/MAINTAINERS
+@@ -0,0 +1,45 @@
++How to use this list:
++    Find the most specific section entry (described below) that matches where
++    your change lives and add the reviewers (R) and maintainers (M) as
++    reviewers. You can use the same method to track down who knows a particular
++    code base best.
++
++    Your change/query may span multiple entries; that is okay.
++
++    If you do not find an entry that describes your request at all, someone
++    forgot to update this list; please at least file an issue or send an email
++    to a maintainer, but preferably you should just update this document.
++
++Description of section entries:
++
++    Section entries are structured according to the following scheme:
++
++    X:  NAME <EMAIL_USERNAME@DOMAIN> <IRC_USERNAME!>
++    X:  ...
++    .
++    .
++    .
++
++    Where REPO_NAME is the name of the repository within the OpenBMC GitHub
++    organization; FILE_PATH is a file path within the repository, possibly with
++    wildcards; X is a tag of one of the following types:
++
++    M:  Denotes maintainer; has fields NAME <EMAIL_USERNAME@DOMAIN> <IRC_USERNAME!>;
++        if omitted from an entry, assume one of the maintainers from the
++        MAINTAINERS entry.
++    R:  Denotes reviewer; has fields NAME <EMAIL_USERNAME@DOMAIN> <IRC_USERNAME!>;
++        these people are to be added as reviewers for a change matching the repo
++        path.
++    F:  Denotes forked from an external repository; has fields URL.
++
++    Line comments are to be denoted "# SOME COMMENT" (typical shell style
++    comment); it is important to follow the correct syntax and semantics as we
++    may want to use automated tools with this file in the future.
++
++    A change cannot be added to an OpenBMC repository without a MAINTAINER's
++    approval; thus, a MAINTAINER should always be listed as a reviewer.
++
++START OF MAINTAINERS LIST
++-------------------------
++
++M:  Xiuzhi Cheng <xzcheng@zd-tech.com.cn> <Cheng Xiuzhi!>
+diff --git a/OWNERS b/OWNERS
+new file mode 100644
+index 0000000..5af95e3
+--- /dev/null
++++ b/OWNERS
+@@ -0,0 +1,44 @@
++# OWNERS
++# ------
++#
++# The OWNERS file maintains the list of individuals responsible for various
++# parts of this repository, including code review and approval.  We use the
++# Gerrit 'owners' plugin, which consumes this file, along with some extra
++# keywords for our own purposes and tooling.
++#
++# For details on the configuration used by 'owners' see:
++#  https://gerrit.googlesource.com/plugins/owners/+/refs/heads/master/owners/src/main/resources/Documentation/config.md
++#
++# An OWNERS file must be in the root of a repository but may also be present
++# in any subdirectory.  The contents of the subdirectory OWNERS file are
++# combined with parent directories unless 'inherit: false' is set.
++#
++# The owners file is YAML and has [up to] 4 top-level keywords.
++#   * owners: A list of individuals who have approval authority on the
++#     repository.
++#
++#   * reviewers: A list of individuals who have requested review notification
++#     on the repository.
++#
++#   * matches: A list of specific file/path matches for granular 'owners' and
++#     'reviewers'.  See 'owners' plugin documentation.
++#
++#   * openbmc: A list of openbmc-specific meta-data about owners and reviewers.
++#     - name: preferred name of the individual.
++#     - email: preferred email address of the individual.
++#     - discord: Discord nickname of the individual.
++#
++# It is expected that these 4 sections will be listed in the order above and
++# data within them will be kept sorted.
++
++owners:
++- xzcheng@zd-tech.com.cn
++
++reviewers:
++
++matches:
++
++openbmc:
++- name: Xiuzhi Cheng
++  email: xzcheng@zd-tech.com.cn
++  discord: Xiuzhi Cheng
+diff --git a/README.md b/README.md
+new file mode 100644
+index 0000000..722059a
+--- /dev/null
++++ b/README.md
+@@ -0,0 +1,3 @@
++KunlunBMC IPMI OEM support library
++This component is intended to provide Kunlun-specific IPMI command handlers for OpenBMC. These handlers are intended to integrate Kunlun OpenBMC with servers based on X86,MIPS,AARCH64 architectures .
++
+diff --git a/meson.build b/meson.build
+new file mode 100644
+index 0000000..92e23a7
+--- /dev/null
++++ b/meson.build
+@@ -0,0 +1,29 @@
++project(
++    'kunlun-ipmi-oem',
++    'cpp',
++    default_options: [
++        'warning_level=3',
++        'werror=true',
++        'cpp_std=c++17',
++        'prefix=/usr',
++        'b_lundef=false',
++        'buildtype=debugoptimized',
++    ],
++    license: 'Apache-2.0',
++    version: '1.0',
++    meson_version: '>=0.49.0',
++)
++
++phosphor_logging = dependency('phosphor-logging')
++libipmid = dependency('libipmid')
++
++# Common configurations for src and test
++cdata = configuration_data()
++cdata.set_quoted('IPMI_BIOSDATA_DIR', get_option('IPMI_BIOSDATA_DIR'))
++
++subdir('src')
++
++build_tests = get_option('tests')
++if not build_tests.disabled()
++    subdir('test')
++endif
+diff --git a/meson_options.txt b/meson_options.txt
+new file mode 100644
+index 0000000..f5c4f95
+--- /dev/null
++++ b/meson_options.txt
+@@ -0,0 +1,3 @@
++option('tests', type: 'feature', description: 'Build tests')
++
++option('IPMI_BIOSDATA_DIR', type: 'string', value: '/var/ipmi', description: 'The BIOS info save path')
+diff --git a/src/.uuid b/src/.uuid
+new file mode 100644
+index 0000000..b77e90c
+--- /dev/null
++++ b/src/.uuid
+@@ -0,0 +1 @@
++3579f1bb-5c94-4e25-bf66-2bbd53b3674d
+\ No newline at end of file
+diff --git a/src/kunlun_oem.cpp b/src/kunlun_oem.cpp
+new file mode 100644
+index 0000000..c82fab3
+--- /dev/null
++++ b/src/kunlun_oem.cpp
+@@ -0,0 +1,89 @@
++#include <filesystem>
++#include <ipmid/api.hpp>
++#include <phosphor-logging/log.hpp>
++
++#include "config.h"
++#include "kunlun_oem.hpp"
++
++namespace ipmi
++{
++
++using namespace phosphor::logging;
++
++// save cpu infomation from bios to file
++// index[in]: cpu index
++// info[in]: data saving to file
++static int saveInfoToFile(uint8_t index, std::vector<char> &info)
++{
++    char infoPath[PATH_MAX];
++
++    std::snprintf(infoPath, sizeof(infoPath), IPMI_BIOSDATA_DIR"/cpu%02x", index);
++
++    if (!(std::filesystem::exists(IPMI_BIOSDATA_DIR)))
++    {
++        std::filesystem::create_directory(IPMI_BIOSDATA_DIR);
++    }
++
++    std::ofstream ofs(infoPath, std::ios::out | std::ios::binary);
++    ofs.seekp(0);
++    ofs.write(info.data(), info.size());
++    ofs.close();
++
++    return 0;
++}
++
++// load cpu infomation from file
++// index[in]: cpu index
++// info[out]: data loading from file
++static int loadInfoFromFile(uint8_t index, std::vector<char> &info)
++{
++    char infoPath[PATH_MAX];
++
++    std::snprintf(infoPath, sizeof(infoPath), IPMI_BIOSDATA_DIR"/cpu%02x", index);
++
++    if (!(std::filesystem::exists(infoPath)))
++    {
++        std::filesystem::create_directory(infoPath);
++    }
++
++    std::ifstream ifs(infoPath, std::ios::in | std::ios::binary);
++
++    ifs.seekg(0, std::ios::end);
++    auto size = ifs.tellg();
++    ifs.seekg(0, std::ios::beg);
++
++    info.resize(size);
++
++    ifs.read(info.data(), size);
++    ifs.close();
++
++    return 0;
++}
++
++RspType<> setCpuInfo(uint8_t index, std::vector<char> info)
++{
++    saveInfoToFile(index, info);
++
++    return responseSuccess();
++}
++
++RspType<std::vector<char>> getCpuInfo(uint8_t index)
++{
++    std::vector<char> output;
++
++    loadInfoFromFile(index, output);
++
++    return responseSuccess(output);
++}
++
++void register_kunlun_oem_functions(void)
++{
++    registerHandler(prioOemBase, netfnKunlunOem, cmd::cmdSetCpuInfo,
++                    Privilege::Admin, setCpuInfo);
++    registerHandler(prioOemBase, netfnKunlunOem, cmd::cmdGetCpuInfo,
++                    Privilege::User, getCpuInfo);
++}
++
++void register_kunlun_oem_functions() __attribute__((constructor));
++
++} // namespace ipmi
+diff --git a/src/kunlun_oem.hpp b/src/kunlun_oem.hpp
+new file mode 100644
+index 0000000..acd62db
+--- /dev/null
++++ b/src/kunlun_oem.hpp
+@@ -0,0 +1,23 @@
++#pragma once
++
++#include <cstdint>
++#include <ipmid/api.hpp>
++
++namespace ipmi
++{
++
++using NetFn = uint8_t;
++using Cmd   = uint8_t;
++using Cc    = uint8_t;
++
++constexpr NetFn netfnKunlunOem = netFnOemSix;
++namespace cmd
++{
++    constexpr Cmd cmdSetCpuInfo   = 0x0;
++    constexpr Cmd cmdGetCpuInfo   = 0x1;
++} // namespace cmd
++
++RspType<> setCpuInfo(uint8_t index, std::vector<char> info);
++RspType<std::vector<char>> getCpuInfo(uint8_t index);
++
++} // namespace ipmi
+diff --git a/src/meson.build b/src/meson.build
+new file mode 100644
+index 0000000..cb77ffc
+--- /dev/null
++++ b/src/meson.build
+@@ -0,0 +1,19 @@
++configure_file(output: 'config.h',
++    configuration: cdata,
++)
++
++src_inc = include_directories('.')
++
++so_version = '0.0.1'
++
++shared_library(
++  'kunlun-ipmi-oem',
++  'kunlun_oem.cpp',
++  dependencies: [
++    phosphor_logging,
++    libipmid,
++  ],
++  version: so_version,
++  install: true,
++  install_dir: get_option('libdir') / 'ipmid-providers'
++  )
+diff --git a/test/.uuid b/test/.uuid
+new file mode 100644
+index 0000000..9ec05e5
+--- /dev/null
++++ b/test/.uuid
+@@ -0,0 +1 @@
++5ff5f36b-062f-459b-a9ee-70bc183722c4
+\ No newline at end of file
+diff --git a/test/meson.build b/test/meson.build
+new file mode 100644
+index 0000000..0e54c90
+--- /dev/null
++++ b/test/meson.build
+@@ -0,0 +1,23 @@
++gtest = dependency('gtest', main: true, disabler: true, required: build_tests)
++gmock = dependency('gmock', disabler: true, required: build_tests)
++openssl = dependency('openssl', disabler: true, required: build_tests)
++
++configure_file(output: 'config.h',
++  configuration: cdata,
++)
++test_inc = include_directories('.')
++
++test_kunlun_ipmi_oem = executable(
++  'test_kunlun-ipmi-oem',
++  '../src/kunlun_oem.cpp',
++  'test_kunlun_ipmi_oem.cpp',
++  include_directories: [test_inc, src_inc],
++  dependencies: [
++    libipmid,
++    gtest,
++    gmock,
++    phosphor_logging,
++    openssl,
++  ])
++
++test('test_kunlun-ipmi-oem', test_kunlun_ipmi_oem)
+diff --git a/test/test_kunlun_ipmi_oem.cpp b/test/test_kunlun_ipmi_oem.cpp
+new file mode 100644
+index 0000000..1b4526a
+--- /dev/null
++++ b/test/test_kunlun_ipmi_oem.cpp
+@@ -0,0 +1,56 @@
++#include "config.h"
++
++#include "kunlun_oem.hpp"
++
++#include <ipmid/api.h>
++
++#include <gmock/gmock.h>
++#include <gtest/gtest.h>
++
++using ::testing::_;
++using ::testing::Invoke;
++using ::testing::IsNull;
++using ::testing::Return;
++using ::testing::StrEq;
++using ::testing::VariantWith;
++
++namespace ipmi
++{
++
++namespace impl
++{
++
++bool registerHandler(int prio, NetFn netFn, Cmd cmd, Privilege priv, ::ipmi::HandlerBase::ptr handler)
++{
++    (void)prio;
++    (void)netFn;
++    (void)cmd;
++    (void)priv;
++    (void)handler;
++
++    return true;
++}
++
++} // namespace impl
++
++TEST(TestKunlunIpmiOem, SetAndGetCpuInfo)
++{
++    uint8_t index = 0;
++    uint32_t loop;
++    std::vector<char> infoSet;
++    std::vector<char> infoGet;
++
++    for (loop = 0; loop < 256; loop++)
++    {
++        infoSet.push_back(static_cast<char>(loop));
++    }
++
++    EXPECT_EQ(setCpuInfo(index, infoSet), responseSuccess());
++
++    auto result = getCpuInfo(index);
++    infoGet = std::get<0>(std::get<1>(result).value());
++
++    EXPECT_TRUE(infoSet == infoGet);
++}
++
++} // namespace ipmi
+\ No newline at end of file
+-- 
+2.27.0
+

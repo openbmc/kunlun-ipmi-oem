@@ -1,0 +1,3 @@
+option('tests', type: 'feature', description: 'Build tests')
+
+option('IPMI_BIOSDATA_DIR', type: 'string', value: '/var/ipmi', description: 'The BIOS info save path')
