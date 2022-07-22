@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "55d6f5fa_4296068a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1000000
+      },
+      "writtenOn": "2022-07-22T21:40:47Z",
+      "side": 1,
+      "message": "Existing code doesn\u0027t even compile.  Bypassing CI.",
+      "revId": "69656e9372f33aba80233b0aaf22ba3237ded672",
+      "serverId": "adbd0a64-1f21-4d83-b585-671fe73cb6e4"
+    }
+  ]
+}
