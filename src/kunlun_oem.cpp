@@ -1,4 +1,5 @@
 #include <filesystem>
+#include <fstream>
 #include <ipmid/api.hpp>
 #include <phosphor-logging/log.hpp>
 
