@@ -1,10 +1,12 @@
-#include <filesystem>
-#include <fstream>
+#include "config.h"
+
+#include "kunlun_oem.hpp"
+
 #include <ipmid/api.hpp>
 #include <phosphor-logging/log.hpp>
 
-#include "config.h"
-#include "kunlun_oem.hpp"
+#include <filesystem>
+#include <fstream>
 
 namespace ipmi
 {
@@ -14,11 +16,12 @@ using namespace phosphor::logging;
 // save cpu infomation from bios to file
 // index[in]: cpu index
 // info[in]: data saving to file
-static int saveInfoToFile(uint8_t index, std::vector<char> &info)
+static int saveInfoToFile(uint8_t index, std::vector<char>& info)
 {
     char infoPath[PATH_MAX];
 
-    std::snprintf(infoPath, sizeof(infoPath), IPMI_BIOSDATA_DIR"/cpu%02x", index);
+    std::snprintf(infoPath, sizeof(infoPath), IPMI_BIOSDATA_DIR "/cpu%02x",
+                  index);
 
     if (!(std::filesystem::exists(IPMI_BIOSDATA_DIR)))
     {
@@ -36,11 +39,12 @@ static int saveInfoToFile(uint8_t index, std::vector<char> &info)
 // load cpu infomation from file
 // index[in]: cpu index
 // info[out]: data loading from file
-static int loadInfoFromFile(uint8_t index, std::vector<char> &info)
+static int loadInfoFromFile(uint8_t index, std::vector<char>& info)
 {
     char infoPath[PATH_MAX];
 
-    std::snprintf(infoPath, sizeof(infoPath), IPMI_BIOSDATA_DIR"/cpu%02x", index);
+    std::snprintf(infoPath, sizeof(infoPath), IPMI_BIOSDATA_DIR "/cpu%02x",
+                  index);
 
     if (!(std::filesystem::exists(infoPath)))
     {

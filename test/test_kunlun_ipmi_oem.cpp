@@ -20,7 +20,8 @@ namespace ipmi
 namespace impl
 {
 
-bool registerHandler(int prio, NetFn netFn, Cmd cmd, Privilege priv, ::ipmi::HandlerBase::ptr handler)
+bool registerHandler(int prio, NetFn netFn, Cmd cmd, Privilege priv,
+                     ::ipmi::HandlerBase::ptr handler)
 {
     (void)prio;
     (void)netFn;
