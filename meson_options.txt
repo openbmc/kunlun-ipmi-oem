@@ -1,3 +1,4 @@
 option('tests', type: 'feature', description: 'Build tests')
 
 option('IPMI_BIOSDATA_DIR', type: 'string', value: '/var/ipmi', description: 'The BIOS info save path')
+option('IPMI_BIOS_VERSION_FILE', type: 'string', value: '/etc/bios-release', description: 'The BIOS version')
