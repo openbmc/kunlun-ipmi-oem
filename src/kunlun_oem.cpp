@@ -81,12 +81,49 @@ RspType<std::vector<char>> getCpuInfo(uint8_t index)
     return responseSuccess(output);
 }
 
+RspType<> setBiosVersion(std::vector<char> data)
+{
+    std::string version(data.begin(), data.end());
+    std::string writeInfo = "VERSION_ID=" + version;
+
+    std::ofstream ofs(IPMI_BIOS_VERSION_FILE, std::ios::out);
+    ofs.seekp(0);
+    ofs.write(writeInfo.data(), writeInfo.size());
+    ofs.close();
+
+    return responseSuccess();
+}
+
+RspType<std::vector<char>> getBiosVersion()
+{
+    std::vector<char> output;
+    std::string key = "VERSION_ID=";
+    std::ifstream ifs(IPMI_BIOS_VERSION_FILE, std::ios::in);
+
+    ifs.seekg(0, std::ios::end);
+    auto size = static_cast<size_t>(ifs.tellg()) - key.size();
+    ifs.seekg(0, std::ios::beg);
+
+    output.resize(size);
+
+    ifs.read(output.data(), size);
+    ifs.close();
+
+    return responseSuccess(output);
+}
+
+
 void register_kunlun_oem_functions(void)
 {
     registerHandler(prioOemBase, netfnKunlunOem, cmd::cmdSetCpuInfo,
                     Privilege::Admin, setCpuInfo);
     registerHandler(prioOemBase, netfnKunlunOem, cmd::cmdGetCpuInfo,
                     Privilege::User, getCpuInfo);
+
+    registerHandler(prioOemBase, netfnKunlunOem, cmd::cmdSetBiosVersion,
+                    Privilege::Admin, setBiosVersion);
+    registerHandler(prioOemBase, netfnKunlunOem, cmd::cmdGetBiosVersion,
+                    Privilege::User, getBiosVersion);
 }
 
 void register_kunlun_oem_functions() __attribute__((constructor));

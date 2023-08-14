@@ -20,6 +20,7 @@ libipmid = dependency('libipmid')
 # Common configurations for src and test
 cdata = configuration_data()
 cdata.set_quoted('IPMI_BIOSDATA_DIR', get_option('IPMI_BIOSDATA_DIR'))
+cdata.set_quoted('IPMI_BIOS_VERSION_FILE', get_option('IPMI_BIOS_VERSION_FILE'))
 
 subdir('src')
 

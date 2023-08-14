@@ -16,6 +16,9 @@ namespace cmd
 {
 constexpr Cmd cmdSetCpuInfo = 0x0;
 constexpr Cmd cmdGetCpuInfo = 0x1;
+
+constexpr Cmd cmdSetBiosVersion = 0x20;
+constexpr Cmd cmdGetBiosVersion = 0x21;
 } // namespace cmd
 
 RspType<> setCpuInfo(uint8_t index, std::vector<char> info);
